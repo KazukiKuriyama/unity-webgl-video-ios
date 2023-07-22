@@ -28,7 +28,7 @@ public class WebGLVideo : MonoBehaviour
     private string _videoFileURL;
 
     private static bool _videoPlaying = false;
-    private Texture2D _videoTexture;
+    Texture2D _videoTexture;
     [SerializeField] private Material _targetMaterial;
     [SerializeField] private Texture _defaultTexture;
     private static List<int> _playingVideoGameObjectsID = new List<int>();
