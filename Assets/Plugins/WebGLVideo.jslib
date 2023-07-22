@@ -1,4 +1,4 @@
-StartVideo = {
+WebGLVideo = {
     $StartVideoFancs: {},
     InitVideo: function (filePath, gameObjectID) {
         const strFilePath = UTF8ToString(filePath);
@@ -67,6 +67,6 @@ StartVideo = {
         GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, elem);
     },
 }
-autoAddDeps(StartVideo, '$StartVideoFancs');
-autoAddDeps(StartVideo, '$isIOSSafari');
-mergeInto(LibraryManager.library, StartVideo);
+autoAddDeps(WebGLVideo, '$StartVideoFancs');
+autoAddDeps(WebGLVideo, '$isIOSSafari');
+mergeInto(LibraryManager.library, WebGLVideo);
