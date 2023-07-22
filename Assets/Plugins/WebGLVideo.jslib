@@ -1,4 +1,4 @@
-StartVideo = {
+WebGLVideo = {
     $StartVideoFancs: {},
     InitVideo: function (filePath, gameObjectID) {
         const strFilePath = UTF8ToString(filePath);
@@ -69,4 +69,4 @@ StartVideo = {
 }
 autoAddDeps(StartVideo, '$StartVideoFancs');
 autoAddDeps(StartVideo, '$isIOSSafari');
-mergeInto(LibraryManager.library, StartVideo);
+mergeInto(LibraryManager.library, WebGLVideo);
