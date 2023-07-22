@@ -29,8 +29,8 @@ public class WebGLVideo : MonoBehaviour
 
     private static bool _videoPlaying = false;
     Texture2D _videoTexture;
-    [SerializeField] private Material _targetMaterial;
-    [SerializeField] private Texture _defaultTexture;
+    [SerializeField] private RenderTexture _targetRenderTexture;
+    [SerializeField,Header("Option")] private Texture _defaultTexture;
     private static List<int> _playingVideoGameObjectsID = new List<int>();
     private int _myGameObjectID;
 
@@ -157,11 +157,11 @@ public class WebGLVideo : MonoBehaviour
             // jslibでtextureを書き込み返却後に描画する
             _videoTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             UpdateVideoTexture((int)_videoTexture.GetNativeTexturePtr(),_myGameObjectID);
-            _targetMaterial.mainTexture = _videoTexture;
+            Graphics.Blit(_videoTexture, _targetRenderTexture);
         }
         else
         {
-            _targetMaterial.mainTexture = _defaultTexture;
+            Graphics.Blit(_defaultTexture, _targetRenderTexture);
         }
     }
 }
