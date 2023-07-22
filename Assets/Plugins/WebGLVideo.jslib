@@ -67,6 +67,6 @@ WebGLVideo = {
         GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, elem);
     },
 }
-autoAddDeps(StartVideo, '$StartVideoFancs');
-autoAddDeps(StartVideo, '$isIOSSafari');
+autoAddDeps(WebGLVideo, '$StartVideoFancs');
+autoAddDeps(WebGLVideo, '$isIOSSafari');
 mergeInto(LibraryManager.library, WebGLVideo);
