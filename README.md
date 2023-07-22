@@ -1,2 +1,2 @@
 # unity-webgl-video-ios
-iOSでも動作するWebGLのVideo機能
+WebGL's Video feature that also works on iOS
