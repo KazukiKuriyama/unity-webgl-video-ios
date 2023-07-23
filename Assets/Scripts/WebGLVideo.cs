@@ -15,13 +15,13 @@ namespace WebGLVideo
             int instanceID);
 
         [DllImport("__Internal")]
-        private static extern void InitVideo(string file, int gameObjectID);
+        private static extern void InitializeVideo(string file, int gameObjectID);
 
         // 描画するための関数
         [DllImport("__Internal")]
         private static extern void UpdateVideoTexture(int texture, int gameObjectID);
-
-        private static bool _isVideoInitialized = false;
+            
+        private bool _isVideoInitialized = false;
         private static bool _isStartVideoInitialized = false;
 
         [SerializeField] private bool _isUseStreamingAssets;
@@ -35,6 +35,7 @@ namespace WebGLVideo
         [SerializeField, Header("Option")] private Texture _defaultTexture;
         private static List<int> _playingVideoGameObjectsID = new List<int>();
         private int _myGameObjectID;
+        private static bool _wasDisplayMutePopUp = false;
 
         /// <summary>
         /// URLの初期設定
@@ -76,20 +77,26 @@ namespace WebGLVideo
         {
             _myGameObjectID = gameObject.GetInstanceID();
             InitializeVideoFileURL(_videoFileURL);
-            InitVideo(_videoFileURL, _myGameObjectID);
+        }
+
+        /// <summary>
+        /// ビデオタグの初期化
+        /// </summary>
+        public void Initialize()
+        {
+            InitializeVideo(_videoFileURL, _myGameObjectID);
             _isVideoInitialized = true;
         }
 
-
-        private async void Start()
+        /// <summary>
+        /// 動画再生
+        /// </summary>
+        public void Play()
         {
-            await WaitForVideoInitialized();
-        }
-
-        // 何かボタンが押されたら動画を再生する
-        private void VideoTest()
-        {
-            StartVideo(_videoFileURL, 0, OnStarted, OnStopped, _myGameObjectID);
+            if (_isVideoInitialized)
+            {
+                StartVideo(_videoFileURL, 0, OnStarted, OnStopped, _myGameObjectID);
+            }
         }
 
         /// <summary>
@@ -99,7 +106,6 @@ namespace WebGLVideo
         private static void OnInitialized()
         {
             Debug.Log("OnVideoInitialized");
-            _isVideoInitialized = true;
         }
 
         /// <summary>
@@ -125,28 +131,6 @@ namespace WebGLVideo
             _playingVideoGameObjectsID.Remove(gameObjectID);
         }
 
-        /// <summary>
-        /// 初期タップ検知待ち
-        /// </summary>
-        private async Task WaitForVideoInitialized()
-        {
-            while (!_isVideoInitialized)
-            {
-                await Task.Delay(100); // 100ミリ秒待つ
-            }
-
-            Debug.Log("InitializedEvent()");
-            InitializedEvent();
-        }
-
-        /// <summary>
-        /// 動画再生準備完了イベント
-        /// </summary>
-        void InitializedEvent()
-        {
-            VideoTest();
-        }
-
         void Update()
         {
             if (_isVideoInitialized && _playingVideoGameObjectsID.Contains(_myGameObjectID))
@@ -163,7 +147,7 @@ namespace WebGLVideo
             }
             else
             {
-                Graphics.Blit(_defaultTexture, _targetRenderTexture);
+                // Graphics.Blit(_defaultTexture, _targetRenderTexture);
             }
         }
     }

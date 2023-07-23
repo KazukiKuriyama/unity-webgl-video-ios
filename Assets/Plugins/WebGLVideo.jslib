@@ -1,60 +1,39 @@
 WebGLVideo = {
-    $StartVideoFancs: {},
-    InitVideo: function (filePath, gameObjectID) {
+    InitializeVideo: function (filePath, gameObjectId) {
         const strFilePath = UTF8ToString(filePath);
         const elem = document.createElement("video");
-        const id = "video_screen_" + gameObjectID;
-        elem.id = id;
-        document.getElementById("unity-canvas").appendChild(elem);
+        elem.id = getVideoScreenId(gameObjectId);
+        document.getElementById("unity-container").appendChild(elem);
         elem.setAttribute("style", "display:none;");
         elem.setAttribute("playsinline", "");
         elem.setAttribute("src", strFilePath);
-        elem.muted = true;
-        const unmute = () => {
-            elem.muted = false;
-        }
-        document.getElementById("unity-canvas").addEventListener("touchstart", unmute);
-        alert("画面をタップすると音声がでます。");
+        elem.muted = false;
     },
-    StartVideo: function (filePath, time, _onStarted, _onStopped, gameObjectID) {
+    StartVideo: function (filePath, time, _onStarted, _onStopped, gameObjectId) {
         const strFilePath = UTF8ToString(filePath);
-        var currentVideoElementId = "video_screen_" + gameObjectID;
+        var currentVideoElementId = getVideoScreenId(gameObjectId);
         const elem = document.getElementById(currentVideoElementId);
         elem.play();
-        // console.log(elem);
         // Unityの方に表示する
         elem.currentTime = time;
-        // if (isIOSSafari()) {
-        //     const unmute = () => {
-        //         elem.muted = false;
-        //     }
-        //     document.getElementById("unity-canvas").addEventListener("touchstart", unmute);
-        //     alert("画面をタップすると音声がでます。");
-        // } else {
-        //     elem.muted = false;
-        // }
-        // C#のPiyo関数を呼ぶ
-        Module['dynCall_vi'](_onStarted, gameObjectID);
+        Module['dynCall_vi'](_onStarted, gameObjectId);
 
         elem.addEventListener('ended', (event) => {
-            Module['dynCall_vi'](_onStopped, gameObjectID);
+            Module['dynCall_vi'](_onStopped, gameObjectId);
         });
     },
-    $isIOSSafari: function () {
-        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    },
-    UpdateVideoTexture: function (tex, gameObjectID) {
+    UpdateVideoTexture: function (tex, gameObjectId) {
 
         // set texture
         GLctx.deleteTexture(GL.textures[tex]);
-        
+
         var t = GLctx.createTexture();
         // console.log(t);
         t.name = tex;
         GL.textures[tex] = t;
         // console.log(GL);
 
-        var currentVideoElementId = "video_screen_" + gameObjectID;
+        var currentVideoElementId = getVideoScreenId(gameObjectId);
         elem = document.getElementById(currentVideoElementId);
         // console.log(elem);
         // console.log(GLctx);
@@ -66,7 +45,17 @@ WebGLVideo = {
         GLctx.texParameteri(GLctx.TEXTURE_2D, GLctx.TEXTURE_MIN_FILTER, GLctx.LINEAR);
         GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, elem);
     },
+    $isIOSSafari: function () {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    },
+    $webVideoFlags: { IsClicked: false },
+    $startVideoFancs: {},
+    $getVideoScreenId: function (gameObjectId) {
+        return "video_screen_" + gameObjectId;
+    },
 }
-autoAddDeps(WebGLVideo, '$StartVideoFancs');
+autoAddDeps(WebGLVideo, '$getVideoScreenId');
+autoAddDeps(WebGLVideo, '$webVideoFlags');
+autoAddDeps(WebGLVideo, '$startVideoFancs');
 autoAddDeps(WebGLVideo, '$isIOSSafari');
 mergeInto(LibraryManager.library, WebGLVideo);
