@@ -8,3 +8,4 @@ If you will only use it in a PC environment, using the VideoPlayer component is 
 * Due to browser security rules, even if you use this source code, you must tap the screen once before playing the audio. If the tap is made after the timing when the audio is originally played, the audio for that video will not be played. *Under investigation
   * To counteract this problem, this sample Scene does not automatically play the video, but requires the input operation of a button in advance. 
 * Remember to allow the hosting server's CORS settings since the video is supposed to be retrieved from a URL. *Not required for the same domain. 
+* UnityRoom, which cannot upload jslib builds, is not supported.
