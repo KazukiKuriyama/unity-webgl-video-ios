@@ -413,7 +413,7 @@ MonoBehaviour:
   _isUseStreamingAssets: 1
   _videoFileURL: TestVideo2.mp4
   _targetRenderTexture: {fileID: 8400000, guid: cca2f28899dc6454db57cee803330e7d, type: 2}
-  _defaultTexture: {fileID: 0}
+  _playOnAwake: 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,7 +721,7 @@ MonoBehaviour:
   _isUseStreamingAssets: 1
   _videoFileURL: TestVideo.mp4
   _targetRenderTexture: {fileID: 8400000, guid: 7cf3b26087cef4af78b7acfee5c528df, type: 2}
-  _defaultTexture: {fileID: 0}
+  _playOnAwake: 0
 --- !u!1 &1241008572
 GameObject:
   m_ObjectHideFlags: 0
