@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AOT;
@@ -9,6 +10,10 @@ namespace WebGLVideo
 {
     public class WebGLVideo : MonoBehaviour
     {
+        // static
+        private static List<int> s_playingVideoGameObjectsID = new List<int>();
+        private static bool s_wasDisplayMutePopUp = false;
+        
         // 再生を開始するための関数
         [DllImport("__Internal")]
         private static extern void StartVideo(string file, int time, Action<int> onStarted, Action<int> onStopped,
@@ -20,23 +25,19 @@ namespace WebGLVideo
         // 描画するための関数
         [DllImport("__Internal")]
         private static extern void UpdateVideoTexture(int texture, int gameObjectID);
-            
-        private bool _isVideoInitialized = false;
-        private static bool _isStartVideoInitialized = false;
 
+        /// <summary> ビデオ再生準備完了フラグ </summary>
+        private bool _isVideoInitialized;
+
+        /// <summary> StreamingAssetsからの相対パスを利用するかどうか。Inspectorの設定値を利用する場合のみ利用する </summary>
         [SerializeField] private bool _isUseStreamingAssets;
-
         [SerializeField, Header("Relative URL from StreamingAssets or absolute path")]
         private string _videoFileURL;
-
-        private static bool _videoPlaying = false;
         Texture2D _videoTexture;
         [SerializeField] private RenderTexture _targetRenderTexture;
-        [SerializeField, Header("Option")] private Texture _defaultTexture;
-        private static List<int> _playingVideoGameObjectsID = new List<int>();
+        // [SerializeField, Header("Option")] private Texture _defaultTexture;
         private int _myGameObjectID;
-        private static bool _wasDisplayMutePopUp = false;
-
+        
         /// <summary>
         /// URLの初期設定
         /// </summary>
@@ -57,7 +58,7 @@ namespace WebGLVideo
         public string SetRelativeStreamingAssetURL(string videoFileURL)
         {
             _isUseStreamingAssets = true;
-            _videoFileURL = Application.streamingAssetsPath + "/" + videoFileURL;
+            _videoFileURL = Path.Combine(Application.streamingAssetsPath, videoFileURL);
             return _videoFileURL;
         }
 
@@ -115,9 +116,9 @@ namespace WebGLVideo
         private static void OnStarted(int gameObjectID)
         {
             Debug.Log("OnStarted");
-            if (!_playingVideoGameObjectsID.Contains(gameObjectID))
+            if (!s_playingVideoGameObjectsID.Contains(gameObjectID))
             {
-                _playingVideoGameObjectsID.Add(gameObjectID);
+                s_playingVideoGameObjectsID.Add(gameObjectID);
             }
         }
 
@@ -128,27 +129,29 @@ namespace WebGLVideo
         private static void OnStopped(int gameObjectID)
         {
             Debug.Log("OnStopped");
-            _playingVideoGameObjectsID.Remove(gameObjectID);
+            s_playingVideoGameObjectsID.Remove(gameObjectID);
         }
 
         void Update()
         {
-            if (_isVideoInitialized && _playingVideoGameObjectsID.Contains(_myGameObjectID))
+            if (_isVideoInitialized && s_playingVideoGameObjectsID.Contains(_myGameObjectID))
             {
-                if (_videoTexture)
-                {
-                    Destroy(_videoTexture);
-                }
-
-                // jslibでtextureを書き込み返却後に描画する
-                _videoTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                UpdateVideoTexture((int)_videoTexture.GetNativeTexturePtr(), _myGameObjectID);
-                Graphics.Blit(_videoTexture, _targetRenderTexture);
+                RenderVideoTexture();
             }
             else
             {
                 // Graphics.Blit(_defaultTexture, _targetRenderTexture);
             }
+        }
+
+        private void RenderVideoTexture()
+        {
+            if (_videoTexture)
+                Destroy(_videoTexture);
+
+            _videoTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            UpdateVideoTexture((int)_videoTexture.GetNativeTexturePtr(), _myGameObjectID);
+            Graphics.Blit(_videoTexture, _targetRenderTexture);
         }
     }
 }
