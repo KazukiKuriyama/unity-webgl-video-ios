@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AOT;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace WebGLVideo
 {
@@ -13,7 +14,7 @@ namespace WebGLVideo
         // static
         private static List<int> s_playingVideoGameObjectsID = new List<int>();
         private static bool s_wasDisplayMutePopUp = false;
-        
+
         // 再生を開始するための関数
         [DllImport("__Internal")]
         private static extern void StartVideo(string file, int time, Action<int> onStarted, Action<int> onStopped,
@@ -31,23 +32,69 @@ namespace WebGLVideo
 
         /// <summary> StreamingAssetsからの相対パスを利用するかどうか。Inspectorの設定値を利用する場合のみ利用する </summary>
         [SerializeField] private bool _isUseStreamingAssets;
+
         [SerializeField, Header("Relative URL from StreamingAssets or absolute path")]
         private string _videoFileURL;
+
         Texture2D _videoTexture;
+
         [SerializeField] private RenderTexture _targetRenderTexture;
+        [SerializeField] private bool _playOnAwake;
+
         // [SerializeField, Header("Option")] private Texture _defaultTexture;
         private int _myGameObjectID;
-        
+
+
+        // Videoコンポーネント対応（UnityEditor動作用）
+        private VideoPlayer _videoPlayer;
+
+        private void Awake()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            _myGameObjectID = gameObject.GetInstanceID();
+            InitializeVideoFileURL(_videoFileURL);
+#else
+            VideoPlayerInitialize();
+#endif
+        }
+
+        /// <summary>
+        ///     ブラウザ以外時に利用するVideoPlayerコンポーネントの初期設定
+        /// </summary>
+        private void VideoPlayerInitialize()
+        {
+            _videoPlayer = gameObject.AddComponent<VideoPlayer>();
+            _videoPlayer.playOnAwake = _playOnAwake; // 必ずurl設定する前に設定しておく
+            _videoPlayer.targetTexture = _targetRenderTexture;
+            _videoPlayer.url = InitializeVideoFileURL(_videoFileURL);
+            _isVideoInitialized = true;
+        }
+
+        /// <summary>
+        /// ビデオタグの初期化
+        /// </summary>
+        public void Initialize()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            InitializeVideo(_videoFileURL, _myGameObjectID);
+            _isVideoInitialized = true;
+#else
+            ; // ブラウザ以外では実行する必要なし
+#endif
+        }
+
         /// <summary>
         /// URLの初期設定
         /// </summary>
         /// <param name="videoFileURL"></param>
-        private void InitializeVideoFileURL(string videoFileURL)
+        private string InitializeVideoFileURL(string videoFileURL)
         {
+            string url;
             if (_isUseStreamingAssets)
-                SetRelativeStreamingAssetURL(videoFileURL);
+                url = SetRelativeStreamingAssetURL(videoFileURL);
             else
-                SetAbsoluteAssetURL(videoFileURL);
+                url = SetAbsoluteAssetURL(videoFileURL);
+            return url;
         }
 
         /// <summary>
@@ -74,30 +121,31 @@ namespace WebGLVideo
             return _videoFileURL;
         }
 
-        private void Awake()
-        {
-            _myGameObjectID = gameObject.GetInstanceID();
-            InitializeVideoFileURL(_videoFileURL);
-        }
-
-        /// <summary>
-        /// ビデオタグの初期化
-        /// </summary>
-        public void Initialize()
-        {
-            InitializeVideo(_videoFileURL, _myGameObjectID);
-            _isVideoInitialized = true;
-        }
-
         /// <summary>
         /// 動画再生
         /// </summary>
         public void Play()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
             if (_isVideoInitialized)
             {
                 StartVideo(_videoFileURL, 0, OnStarted, OnStopped, _myGameObjectID);
             }
+#else
+            _videoPlayer.Play();
+#endif
+        }
+
+        /// <summary>
+        /// 再生停止
+        /// </summary>
+        public void Stop()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            ;// to be developed　(video.pause)
+#else
+            _videoPlayer.Stop();
+#endif
         }
 
         /// <summary>
@@ -134,6 +182,7 @@ namespace WebGLVideo
 
         void Update()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
             if (_isVideoInitialized && s_playingVideoGameObjectsID.Contains(_myGameObjectID))
             {
                 RenderVideoTexture();
@@ -142,6 +191,7 @@ namespace WebGLVideo
             {
                 // Graphics.Blit(_defaultTexture, _targetRenderTexture);
             }
+#endif
         }
 
         private void RenderVideoTexture()
