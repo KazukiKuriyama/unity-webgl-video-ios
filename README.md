@@ -8,3 +8,4 @@ If you will only use it in a PC environment, using the VideoPlayer component is 
   * To counteract this problem, this sample Scene does not automatically play the video, but requires the input operation of a button in advance. 
 * Remember to allow the hosting server's CORS settings since the video is supposed to be retrieved from a URL. *Not required for the same domain. 
 * UnityRoom, which cannot upload jslib builds, is not supported.
+* It is recommended that you try the playback methods described in [this article](https://qiita.com/kazuki_kuriyama/items/2b66c3976abdf070566d) before using this repository.
